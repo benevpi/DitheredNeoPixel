@@ -2,6 +2,8 @@ from rp2pio import StateMachine
 from adafruit_pioasm import Program
 import struct
 
+#large parts of this are stolen from the Adafruit examples
+
 _program = Program(
     """
 .side_set 1 opt
