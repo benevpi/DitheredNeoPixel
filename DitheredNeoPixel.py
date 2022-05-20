@@ -2,7 +2,9 @@ from rp2pio import StateMachine
 from adafruit_pioasm import Program
 import struct
 
-#large parts of this are stolen from the Adafruit examples
+#TODO
+# should this have any gamma correction built in?
+
 
 _program = Program(
     """
@@ -75,15 +77,22 @@ class DitheredNeopixel:
     def __getitem__(self):
         #hmm, this is actually a bit tricky -- do we store the un-split values (which would take a chunk of RAM)? Maybe not worth it
         pass
-        
+      
+    #this isn't quite right. The shifts should be the log of the bit depth? maybe.
+    #maybe the ceiling of the log?
     def __setitem__(self, number, colour):
         for i in range(self.bpp):
         #find closest 8 bit value
             error = 0
             for byte in range(self.extra_bit_depth):
                 val = (colour[i] + error) >> self.extra_bit_depth
+
                 self.buf[(self.byte_count+self.padding_count+8)*byte + 4 + number*3 + i] = val # possibly need to include padding?
-                error = (colour[i]+error) - (val << 4)
+                error = (colour[i]+error) - (val << self.extra_bit_depth)
         
     def start(self):
         self.pix_sm.background_write(loop=memoryview(self.buf).cast("L"), swap=True)
+        
+    def max_val(self):
+        pass
+        #return the maximum value so that you can map to it.
